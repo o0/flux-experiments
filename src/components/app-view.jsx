@@ -4,8 +4,8 @@ require('./app-view.scss');
 var ApplicationStore = require('../stores/application-store');
 var applicationStore = ApplicationStore.getInstance();
 var React = require('react/addons');
-var RepositoryForm = require('../components/repository-form.jsx');
-var RepositoryStructure = require('../components/repository-structure.jsx');
+var RepositoryForm = require('./repository-form.jsx');
+var RepositoryStructure = require('./repository-structure.jsx');
 
 
 /**
