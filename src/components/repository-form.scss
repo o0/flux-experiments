@@ -1,5 +1,5 @@
 .form-overlay {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.7);
   bottom: 0;
   left: 0;
   min-height: 4em;
@@ -8,15 +8,18 @@
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 1;
 }
 
 .form-overlay-content {
-  border: dotted 1px #ddd;
+  background: #fff;
+  border: none;
   border-radius: 2px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
   left: 50%;
   margin: -5em 0 0 -175px;
-  padding: 10px;
+  padding: 20px;
   position: absolute;
   top: 50%;
 }
@@ -25,18 +28,18 @@
   display: inline-block;
   margin: 5px 10px 5px 0;
   vertical-align: middle;
-  width: 90px;
+  width: 80px;
   white-space: nowrap;
 }
 
 .form-overlay-input {
-  font: 16px Helvetica, Arial, sans;
+  font: 90% Verdana, sans;
   width: 210px;
 }
 
 .form-overlay-submit {
   font-size: 16px;
-  margin: 5px 0 0 100px;
+  margin: 5px 0 0 90px;
 }
 
 .form-overlay-error {
