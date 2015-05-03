@@ -32,6 +32,7 @@ var RepositoryForm = React.createClass({
   },
 
   componentWillUnmount: function() {
+    // fixme: This code doesn't work because I never call unmountComponent at this component.
     repositoryStore.
         removeAllListeners(RepositoryStore.EventType.SET_REPOSITORIES_LIST, this.onStoreChange_);
         removeAllListeners(RepositoryStore.EventType.REPOSITORIES_LOAD_ERROR, this.onStoreChange_);
