@@ -7,8 +7,10 @@
     "react": ""
   },
   "devDependencies": {
+    "css-loader": "",
     "jsx-loader": "",
     "sass-loader": "",
+    "style-loader": "",
     "webpack": "",
     "webpack-dev-server": ""
   },
