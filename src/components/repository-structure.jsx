@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+require('./repository-structure.scss');
 var React = require('react/addons');
 var RepositoryStore = require('../stores/repository-store');
 var repositoryStore = RepositoryStore.getInstance();
@@ -24,15 +25,16 @@ var RepositoryStructure = React.createClass({
 
   render: function() {
     return (<div className="structure">
-      <div className="structure-repository"></div>
-      <div className="structure-revisions">{
-        this.state.revisionsList.map(function(revision) {
-          return <div>
-            {revision.commit.message}, <small>{revision.commit.committer.name}</small>
+      <div className="structure-repository structure-col"></div>
+      <div className="structure-revisions structure-col">{
+        this.state.revisionsList.map(function(revision, index) {
+          return <div key={['revision', index].join('-')} className="structure-revision">
+            {revision.commit.message}<br />
+            <small>{revision.commit.committer.name}, {new Date(revision.commit.committer.date).toLocaleString()}</small>
           </div>
         })
       }</div>
-      <div className="structure-revision"></div>
+      <div className="structure-revision-details structure-col structure-revision-details-empty"></div>
     </div>);
   },
 
