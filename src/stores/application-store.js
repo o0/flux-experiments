@@ -1,11 +1,8 @@
-/**
- * @fileoverview Top-level UI component storage.
- * @author igor.alexeenko (Igor Alekseenko)
- */
-
 var EventEmitter = require('events').EventEmitter;
-var navigationDispatcher = require('../dispatchers/dispatcher');
+var dispatcher = require('../dispatchers/dispatcher');
+var RepositoryActions = require('../actions/repository-actions');
 var util = require('util');
+var utils = require('../utils/utils');
 
 
 /**
@@ -13,8 +10,7 @@ var util = require('util');
  */
 var State = {
   NULL: 0x00,
-  LOADING: 0x01,
-  ERROR: 0x02
+  REPOSITORY_IS_LOADED: 0x01
 };
 
 
@@ -22,7 +18,8 @@ var State = {
  * @enum {string}
  */
 var EventType = {
-  SET_STATE: 'update-state'
+  CHANGE: 'change',
+  LOAD_REPOSITORY: 'load-repository'
 };
 
 
@@ -31,9 +28,17 @@ var EventType = {
  * @extends {EventEmitter}
  */
 var ApplicationStore = function() {
-  this.navigationHandler_ = navigationDispatcher.register(this.onNavigationDispatch_.bind(this));
+  this.dispatchHandler_ = dispatcher.register(function(payload) {
+    switch (payload.actionType) {
+      case RepositoryActions.ActionType.LOAD_REPOSITORY: 
+        this.setStateEnabled(State.REPOSITORY_IS_LOADED, true);
+        this.emit(EventType.LOAD_REPOSITORY);
+        break;
+    }
+  }.bind(this));
 };
 util.inherits(ApplicationStore, EventEmitter);
+utils.makeSingleton(ApplicationStore);
 
 /**
  * @type {State}
@@ -45,19 +50,20 @@ ApplicationStore.prototype.state_ = State.NULL;
  * @param {State} state
  * @param enabled
  */
-ApplicationStore.setStateEnabled = function(state, enabled) {
+ApplicationStore.prototype.setStateEnabled = function(state, enabled) {
   this.state_ = enabled ? this.state_ | state : this.state_ & ~state;
   this.emit(EventType.SET_STATE);
 };
 
 /**
- * @param {NavAction} action
- * @private
+ * @param {State} state
+ * @return {boolean}
  */
-ApplicationStore.prototype.onNavigationDispatch_ = function(action) {
-
+ApplicationStore.prototype.hasState = function(state) {
+  return !!(this.state_ & state);
 };
 
-module.exports = new ApplicationStore;
+
+module.exports = ApplicationStore;
 module.exports.State = State;
 module.exports.EventType = EventType;
