@@ -1,8 +1,3 @@
-/**
- * @fileoverview Navigation actions.
- * @author o0 (Igor Alekseenko)
- */
-
 var navigationDispatcher = require('../dispatchers/dispatcher');
 var url = require('url');
 
@@ -13,9 +8,9 @@ var url = require('url');
  */
 var NavActionType = {
   INDEX: '/',
-  REPOSITORY: 'show-repository',
-  REVISIONS_LIST: 'show-revisions-list',
-  REVISION: 'show-revision'
+  REPOSITORY: 'repository',
+  REVISIONS_LIST: 'revisions',
+  REVISION: 'revision'
 };
 
 
@@ -48,15 +43,22 @@ NavAction.prototype.toString = function() {
 
 
 /** @constructor */
-var NavActions = function() {
-  window.onpopstate = this.onHistoryChange_.bind(this);
-};
+var NavActions = function() {};
 
 /**
  * @param {NavActionType} actionType
  * @param {Object=} data
  */
 NavActions.prototype.navigate = function(actionType, data) {
+  if (!this.handlerRegistered_) {
+    window.onpopstate = this.onHistoryChange_.bind(this);
+    /**
+     * @private
+     * @type {boolean}
+     */ 
+    this.handlerRegistered_ = true;
+  }
+
   history.pushState(null, null, new NavAction(actionType, data).toString());
 };
 
@@ -68,13 +70,17 @@ NavActions.prototype.getActionFromUrl = function() {
   return new NavAction(urlData.pathname, urlData.search);
 };
 
+NavActions.prototype.dispatchActionFromUrl = function() {
+  var action = this.getActionFromUrl();
+  navigationDispatcher.dispatch(new NavAction(action.type, action.data));
+};
+
 /**
  * @param {Event} event
  * @private
  */
 NavActions.prototype.onHistoryChange_ = function(event) {
-  var action = this.getActionFromUrl();
-  navigationDispatcher.dispatch(new NavAction(action.type, action.data));
+  this.dispatchActionFromUrl();
 };
 
 
