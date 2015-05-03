@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+require('./app-view.scss');
 var ApplicationStore = require('../stores/application-store');
 var applicationStore = ApplicationStore.getInstance();
 var React = require('react/addons');

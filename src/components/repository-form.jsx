@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+require('./repository-form.scss');
 var React = require('react/addons');
 var RepositoryActions = require('../actions/repository-actions');
 var repositoryActions = RepositoryActions.getInstance();
@@ -29,6 +30,8 @@ var RepositoryForm = React.createClass({
     repositoryStore.
         on(RepositoryStore.EventType.SET_REPOSITORIES_LIST, this.onStoreChange_).
         on(RepositoryStore.EventType.REPOSITORIES_LOAD_ERROR, this.onStoreChange_);
+
+    this.getDOMNode()['repository-form-author'].focus();
   },
 
   componentWillUnmount: function() {
@@ -44,13 +47,17 @@ var RepositoryForm = React.createClass({
     }
 
     return (<form className="form-overlay" onChange={this.onChange_} onSubmit={this.onSubmit_}>
-      <fieldset>
-        <label htmlFor="repository-form-author">Author</label>
-        <input id="repository-form-author" onBlur={this.onAuthorEntered_} required="true" type="text" />
-        <label htmlFor="repository-form-name">Repository name</label>
-        <input id="repository-form-name" onBlur={this.onRepositoryEntered_} type="text" list="form-repositories-list" required="true" />
-        <input type="submit" disabled={!this.state.formIsValid} value="Search" />
-        <span id="repository-error-message">{this.state.errorMessage}</span>
+      <fieldset className="form-overlay-content">
+        <label className="form-overlay-label" htmlFor="repository-form-author">Author</label>
+        <input className="form-overlay-input" id="repository-form-author" onBlur={this.onAuthorEntered_} required="true" type="text" />
+        <br />
+
+        <label className="form-overlay-label" htmlFor="repository-form-name">Repository</label>
+        <input className="form-overlay-input" id="repository-form-name" onBlur={this.onRepositoryEntered_} type="text" list="form-repositories-list" required="true" />
+        <br />
+
+        <input className="form-overlay-submit" type="submit" disabled={!this.state.formIsValid} value="Show" />
+        <span className="form-overlay-error" id="repository-error-message">{this.state.errorMessage}</span>
       </fieldset>
 
       <datalist id="form-repositories-list">{this.state.repositoriesList.map(function(repositoryName) {
@@ -75,9 +82,13 @@ var RepositoryForm = React.createClass({
    */ 
   onSubmit_: function(evt) {
     evt.preventDefault();
-    var formElement = this.getDOMNode();
-    repositoryActions.loadRepository(formElement['repository-form-author'].value,
-                                     formElement['repository-form-name'].value);
+    this.checkValidity(function() {
+      if (this.state.formIsValid) {
+        var formElement = this.getDOMNode();
+        repositoryActions.loadRepository(formElement['repository-form-author'].value,
+                                         formElement['repository-form-name'].value);
+      }
+    }, this);
   },
 
   /**
@@ -118,7 +129,7 @@ var RepositoryForm = React.createClass({
       return;
     }
 
-    if (this.state.repositoriesList.indexOf(repositoryName) === -1) {
+    if (this.state.repositoriesList.indexOf(repositoryName.replace(/\s+/g, '')) === -1) {
       this.setState({
         errorMessage: ['User', username, 'doesn\'t have repository named',repositoryName].join(' ')
       });
@@ -148,13 +159,21 @@ var RepositoryForm = React.createClass({
     return [repositoryName, username].indexOf(document.activeElement) > -1
   },
 
-  checkValidity: function() {
+  /**
+   * @param {function=} callback
+   * @param {*=} ctx
+   */
+  checkValidity: function(callback, ctx) {
     var formElement = this.getDOMNode();
 
     this.setState({
       formIsValid: formElement['repository-form-author'].validity.valid &&
                    formElement['repository-form-name'].validity.valid &&
                    !this.state.errorMessage
+    }, function() {
+      if (typeof callback !== 'undefined') {
+        callback.call(ctx)
+      }
     });
   }
 });

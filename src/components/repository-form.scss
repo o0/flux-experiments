@@ -1,0 +1,49 @@
+.form-overlay {
+  background: rgba(255, 255, 255, 0.8);
+  bottom: 0;
+  left: 0;
+  min-height: 4em;
+  min-width: 350px;
+  overflow: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.form-overlay-content {
+  border: dotted 1px #ddd;
+  border-radius: 2px;
+  box-sizing: border-box;
+  left: 50%;
+  margin: -5em 0 0 -175px;
+  padding: 10px;
+  position: absolute;
+  top: 50%;
+}
+
+.form-overlay-label {
+  display: inline-block;
+  margin: 5px 10px 5px 0;
+  vertical-align: middle;
+  width: 90px;
+  white-space: nowrap;
+}
+
+.form-overlay-input {
+  font: 16px Helvetica, Arial, sans;
+  width: 210px;
+}
+
+.form-overlay-submit {
+  font-size: 16px;
+  margin: 5px 0 0 100px;
+}
+
+.form-overlay-error {
+  display: inline-block;
+  font-size: 70%;
+  font-style: italic;
+  margin: 5px 0 0 10px;
+  max-width: 155px;
+  vertical-align: top;
+}
