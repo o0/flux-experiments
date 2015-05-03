@@ -7,7 +7,6 @@ var repositoryStore = RepositoryStore.getInstance();
 /**
  * @constructor
  * @extends {ReactComponent}
- * @private
  */ 
 var RepositoryStructure = React.createClass({
   getInitialState: function() {
