@@ -1,7 +1,9 @@
+@import './common.scss';
+
 html,
 body {
   color: #333;
-  font: 90%/1.2 Verdana, sans;
+  font: $font-default;
   height: 100%;
   margin: 0;
   padding: 0;
