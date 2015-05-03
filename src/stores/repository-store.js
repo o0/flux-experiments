@@ -5,14 +5,17 @@ var repositoryActions = RepositoryActions.getInstance();
 var util = require('util');
 var utils = require('../utils/utils');
 
+
 /**
  * @enum {string}
  */
 var EventType = {
   REPOSITORIES_LOAD_ERROR: 'repos-load-err',
   SET_REPOSITORIES_LIST: 'repos-set',
-  SET_REVISIONS_LIST: 'revisions-set'
+  SET_REVISIONS_LIST: 'revisions-set',
+  SET_REVISION: 'revision-set'
 };
+
 
 /**
  * @constructor
@@ -24,23 +27,31 @@ var RepositoryStore = function() {
         if (payload.repositories.length === 0) {
           this.errorMessage_ = ['User', this.getUserName(), 'doesn\'t have repositories'].join(' ')
           this.repositoriesList_ = [];
+          this.repositoryName_ = '';
           this.emit(EventType.REPOSITORIES_LOAD_ERROR);
           return;
         }
 
         this.errorMessage_ = '';
         this.repositoriesList = [];
+        this.repositoryName_ = '';
         this.setRepositoriesList(payload.username, payload.repositories);
         break;
 
       case RepositoryActions.ActionType.REPOSITORIES_LOAD_ERROR:
         this.errorMessage_ = payload.message;
         this.repositoriesList_ = [];
+        this.repositoryName_ = '';
         this.emit(EventType.REPOSITORIES_LOAD_ERROR);
         break;
 
       case RepositoryActions.ActionType.LOAD_REPOSITORY:
+        this.repositoryName_ = payload.repositoryName;
         this.setRevisionsList(payload.revisions);
+        break;
+
+      case RepositoryActions.ActionType.LOAD_REVISION:
+        this.setRevision(payload.revision);
         break;
     }
   }.bind(this));
@@ -59,6 +70,25 @@ RepositoryStore.prototype.repositoriesList_ = [];
  * @private
  */
 RepositoryStore.prototype.revisionsList_ = [];
+
+/**
+ * @type {string}
+ * @private
+ */
+RepositoryStore.prototype.repositoryName_ = null;
+
+/**
+ * @type {string}
+ * @private
+ */
+RepositoryStore.prototype.revisionHash_ = null;
+
+// todo: Merge with revisionHash_?
+/**
+ * @type {Object}
+ * @private
+ */
+RepositoryStore.prototype.revision_ = null;
 
 /**
  * @type {string}
@@ -118,6 +148,29 @@ RepositoryStore.prototype.setRevisionsList = function(revisionsList) {
  */
 RepositoryStore.prototype.getRevisionsList = function() {
   return this.revisionsList_;
+};
+
+/**
+ * @return {string}
+ */
+RepositoryStore.prototype.getRepositoryName = function() {
+  return this.repositoryName_;
+};
+
+/**
+ * @param {Object} revision
+ */
+RepositoryStore.prototype.setRevision = function(revision) {
+  this.revision_ = revision;
+  this.revisionHash_ = revision.sha;
+  this.emit(EventType.SET_REVISION);
+};
+
+/**
+ * @return {string}
+ */
+RepositoryStore.prototype.getRevisionHash = function() {
+  return this.revisionHash_;
 };
 
 

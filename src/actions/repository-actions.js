@@ -27,7 +27,8 @@ var RequestType = {
 var ActionType = {
   LOAD_REPOSITORIES: 0,
   LOAD_REPOSITORY: 1,
-  REPOSITORIES_LOAD_ERROR: 2
+  LOAD_REVISION: 2,
+  REPOSITORIES_LOAD_ERROR: 3
 };
 
 
@@ -81,7 +82,27 @@ RepositoryActions.prototype.loadRepository = function(username, repository) {
         if (xhr.status === 200) {
           dispatcher.dispatch({
             actionType: ActionType.LOAD_REPOSITORY,
+            repositoryName: repository,
             revisions: JSON.parse(xhr.response)
+          });
+        }
+      });
+};
+
+/**
+ * @param {string} username
+ * @param {string} repository
+ * @param {string} revisionHash
+ */
+RepositoryActions.prototype.loadRevision = function(username, repository, revisionHash) {
+  utils.makeRequest([API_URL, RequestType.REPOSITORY, username, repository, 'commits', revisionHash].join('/'), 'get',
+      function(event) {
+        var xhr = event.target;
+
+        if (xhr.status === 200) {
+          dispatcher.dispatch({
+            actionType: ActionType.LOAD_REVISION,
+            revision: JSON.parse(xhr.response)
           });
         }
       });

@@ -136,7 +136,7 @@ var RepositoryForm = React.createClass({
 
     if (this.state.repositoriesList.indexOf(repositoryName) === -1) {
       this.setState({
-        errorMessage: ['User', username, 'doesn\'t have repository named',repositoryName].join(' ')
+        errorMessage: ['User', username, 'doesn\'t have repository named', repositoryName].join(' ')
       });
     }
 

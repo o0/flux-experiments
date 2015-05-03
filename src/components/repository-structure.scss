@@ -34,15 +34,29 @@
 
 .structure-revision {
   box-sizing: border-box;
-  padding: 10px;
+  padding: 5px 15px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 
   &:hover {
-    background: #eef9ff;
+    background: #ddf9ff;
     cursor: pointer;
   }
+}
+
+.structure-revision-active,
+.structure-revision-active:hover {
+  background: #08f;
+  color: #fff;
+  cursor: default;
+}
+
+.structure-revision-clicked,
+.structure-revision-clicked:hover {
+  background: #09f;
+  color: #fff;
+  cursor: default;
 }
 
 .structure-revision-details {
