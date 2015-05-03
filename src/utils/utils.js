@@ -30,21 +30,31 @@ utils.makeObject = function(var_args) {
 };
 
 /**
- * @type {XMLHttpRequest}
- * @private
- */
-var xhr = new XMLHttpRequest();
-
-/**
  * @param {string} url
  * @param {string} method
  * @param {function=} callback
  * @param {*=} ctx
  */
 utils.makeRequest = function(url, method, callback, ctx) {
-  xhr.onload = callback.bind(ctx);
+  var xhr = new XMLHttpRequest();
+
+  if (typeof callback !== 'undefined') {
+    xhr.onload = callback.bind(ctx);
+  }
+
   xhr.open(method, url, true);
   xhr.send();
+  return xhr;
+};
+
+/**
+ * @enum {string}
+ */
+utils.RequestEventType = {
+  ABORT: 'abort',
+  ERROR: 'error',
+  LOAD: 'load',
+  PROGRESS: 'progress'
 };
 
 module.exports = utils;
