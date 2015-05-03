@@ -66,7 +66,7 @@ NavActions.prototype.navigate = function(actionType, data) {
  * @return {NavAction}
  */
 NavActions.prototype.getActionFromUrl = function() {
-  var urlData = url.parse(document.location);
+  var urlData = url.parse(document.location.toString());
   return new NavAction(urlData.pathname, urlData.search);
 };
 
