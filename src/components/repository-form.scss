@@ -1,9 +1,11 @@
+@import './common.scss';
+
 .form-overlay {
   background: rgba(255, 255, 255, 0.7);
   bottom: 0;
   left: 0;
   min-height: 4em;
-  min-width: 350px;
+  min-width: 10em;
   overflow: auto;
   position: absolute;
   right: 0;
@@ -18,7 +20,8 @@
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
   left: 50%;
-  margin: -5em 0 0 -175px;
+  margin: -6em 0 0 -12em;
+  max-width: 19em;
   padding: 20px;
   position: absolute;
   top: 50%;
@@ -26,27 +29,27 @@
 
 .form-overlay-label {
   display: inline-block;
-  margin: 5px 10px 5px 0;
+  margin: 5px 0;
+  margin-right: 1em;
   vertical-align: middle;
-  width: 80px;
+  width: 5em;
   white-space: nowrap;
 }
 
 .form-overlay-input {
-  font: 90% Verdana, sans;
-  width: 210px;
+  font: $font-default;
+  width: 10em;
 }
 
 .form-overlay-submit {
-  font-size: 16px;
-  margin: 5px 0 0 90px;
+  margin: 5px 0 0 7em;
 }
 
 .form-overlay-error {
   display: inline-block;
   font-size: 70%;
   font-style: italic;
-  margin: 5px 0 0 10px;
-  max-width: 155px;
+  margin: 5px 0 0 5px;
+  max-width: 8em;
   vertical-align: top;
 }

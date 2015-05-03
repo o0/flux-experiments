@@ -127,12 +127,14 @@ var RepositoryForm = React.createClass({
     var repositoryName = this.getDOMNode()['repository-form-name'].value;
     var username = this.getDOMNode()['repository-form-author'].value;
 
+    repositoryName = repositoryName.replace(/\s+/g, '');
+
     // Do not show error message if one of the input elements is focused.
     if (!repositoryName && !this.inputIsFocused()) {
       return;
     }
 
-    if (this.state.repositoriesList.indexOf(repositoryName.replace(/\s+/g, '')) === -1) {
+    if (this.state.repositoriesList.indexOf(repositoryName) === -1) {
       this.setState({
         errorMessage: ['User', username, 'doesn\'t have repository named',repositoryName].join(' ')
       });
