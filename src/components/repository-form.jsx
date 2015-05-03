@@ -56,7 +56,7 @@ var RepositoryForm = React.createClass({
         <input className="form-overlay-input" id="repository-form-name" onBlur={this.onRepositoryEntered_} type="text" list="form-repositories-list" required="true" />
         <br />
 
-        <input className="form-overlay-submit" type="submit" disabled={!this.state.formIsValid} value="Show" />
+        <input className="form-overlay-submit" id="repository-form-submit" type="submit" disabled={!this.state.formIsValid} value="Show" />
         <span className="form-overlay-error" id="repository-error-message">{this.state.errorMessage}</span>
       </fieldset>
 
@@ -87,6 +87,9 @@ var RepositoryForm = React.createClass({
         var formElement = this.getDOMNode();
         repositoryActions.loadRepository(formElement['repository-form-author'].value,
                                          formElement['repository-form-name'].value);
+
+        // fixme: quick fix. Save state and show a loader.
+        formElement['repository-form-submit'].disabled = true;
       }
     }, this);
   },
