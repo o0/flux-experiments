@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "jsx-loader": "",
+    "sass-loader": "",
     "webpack": "",
     "webpack-dev-server": ""
   },
