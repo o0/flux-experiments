@@ -1,8 +1,4 @@
-/**
- * @fileoverview GitHub client application entry point.
- * @author o0 (Igor Alekseenko)
- * @jsx React.DOM
- */
+/** @jsx React.DOM */
 
 var AppView = require('./components/app-view.jsx');
 var NavActions = require('./actions/nav-actions');
@@ -33,4 +29,3 @@ App.init = function() {
 
 global.boot = App.init;
 global.React = React;
-
