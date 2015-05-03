@@ -9,8 +9,9 @@ var utils = require('../utils/utils');
  * @enum {string}
  */
 var EventType = {
+  REPOSITORIES_LOAD_ERROR: 'repos-load-err',
   SET_REPOSITORIES_LIST: 'repos-set',
-  REPOSITORIES_LOAD_ERROR: 'repos-load-err'
+  SET_REVISIONS_LIST: 'revisions-set'
 };
 
 /**
@@ -37,6 +38,10 @@ var RepositoryStore = function() {
         this.repositoriesList_ = [];
         this.emit(EventType.REPOSITORIES_LOAD_ERROR);
         break;
+
+      case RepositoryActions.ActionType.LOAD_REPOSITORY:
+        this.setRevisionsList(payload.revisions);
+        break;
     }
   }.bind(this));
 };
@@ -48,6 +53,12 @@ utils.makeSingleton(RepositoryStore);
  * @private
  */
 RepositoryStore.prototype.repositoriesList_ = [];
+
+/**
+ * @type {Array.<Object>}
+ * @private
+ */
+RepositoryStore.prototype.revisionsList_ = [];
 
 /**
  * @type {string}
@@ -92,6 +103,21 @@ RepositoryStore.prototype.getRepositoriesList = function() {
  */
 RepositoryStore.prototype.getErrorMessage = function() {
   return this.errorMessage_;
+};
+
+/**
+ * @param {Array.<Object>} revisionsList
+ */
+RepositoryStore.prototype.setRevisionsList = function(revisionsList) {
+  this.revisionsList_ = revisionsList;
+  this.emit(RepositoryStore.EventType.SET_REVISIONS_LIST);
+};
+
+/**
+ * @return {Array.<Object>}
+ */
+RepositoryStore.prototype.getRevisionsList = function() {
+  return this.revisionsList_;
 };
 
 
