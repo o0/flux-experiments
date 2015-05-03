@@ -47,6 +47,7 @@ RepositoryActions.prototype.loadRepositoriesList = function(username) {
       function(event) {
         var xhr = event.target;
 
+        // todo: Maybe it would be better to use one action type instead of two.
         switch(xhr.status) {
           case 404:
             dispatcher.dispatch({
@@ -75,10 +76,14 @@ RepositoryActions.prototype.loadRepositoriesList = function(username) {
 RepositoryActions.prototype.loadRepository = function(username, repository) {
   utils.makeRequest([API_URL, RequestType.REPOSITORY, username, repository, 'commits'].join('/'), 'get', 
       function(event) {
-        dispatcher.dispatch({
-          actionType: ActionType.LOAD_REPOSITORY,
-          repository: JSON.parse(event.target.response)
-        })
+        var xhr = event.target;
+
+        if (xhr.status === 200) {
+          dispatcher.dispatch({
+            actionType: ActionType.LOAD_REPOSITORY,
+            revisions: JSON.parse(xhr.response)
+          });
+        }
       });
 };
 
