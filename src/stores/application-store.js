@@ -30,7 +30,7 @@ var EventType = {
 var ApplicationStore = function() {
   this.dispatchHandler_ = dispatcher.register(function(payload) {
     switch (payload.actionType) {
-      case RepositoryActions.ActionType.LOAD_REPOSITORY: 
+      case RepositoryActions.ActionType.LOAD_REVISIONS: 
         this.setStateEnabled(State.REPOSITORY_IS_LOADED, true);
         this.emit(EventType.LOAD_REPOSITORY);
         break;

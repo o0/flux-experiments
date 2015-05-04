@@ -26,9 +26,10 @@ var RequestType = {
  */
 var ActionType = {
   LOAD_REPOSITORIES: 0,
-  LOAD_REPOSITORY: 1,
+  LOAD_REVISIONS: 1,
   LOAD_REVISION: 2,
-  REPOSITORIES_LOAD_ERROR: 3
+  REPOSITORIES_LOAD_ERROR: 3,
+  SET_PAGE_SIZE: 4
 };
 
 
@@ -39,6 +40,12 @@ var ActionType = {
 var RepositoryActions = function() {};
 util.inherits(RepositoryActions, EventEmitter);
 utils.makeSingleton(RepositoryActions);
+
+/**
+ * @type {number}
+ * @private
+ */
+RepositoryActions.prototype.pageSize_ = Infinity;
 
 /**
  * @param {string} username
@@ -73,15 +80,26 @@ RepositoryActions.prototype.loadRepositoriesList = function(username) {
 /**
  * @param {string} username
  * @param {string} repository
+ * @param {number=} numberOfLoadedRevisions
  */
-RepositoryActions.prototype.loadRepository = function(username, repository) {
-  utils.makeRequest([API_URL, RequestType.REPOSITORY, username, repository, 'commits'].join('/'), 'get', 
+RepositoryActions.prototype.loadRevisions = function(username, repository, numberOfLoadedRevisions) {
+  nextPage = Math.floor(numberOfLoadedRevisions / this.pageSize_) + 1;
+
+  if (!nextPage) {
+    nextPage = 1;
+  }
+
+  utils.makeRequest(
+      [
+        [API_URL, RequestType.REPOSITORY, username, repository, 'commits'].join('/'),
+        this.pageSize_ !== Infinity ? ['?page=', nextPage, '&per_page=', this.pageSize_].join('') : ''
+      ].join(''), 'get', 
       function(event) {
         var xhr = event.target;
 
         if (xhr.status === 200) {
           dispatcher.dispatch({
-            actionType: ActionType.LOAD_REPOSITORY,
+            actionType: ActionType.LOAD_REVISIONS,
             repositoryName: repository,
             revisions: JSON.parse(xhr.response)
           });
@@ -107,6 +125,21 @@ RepositoryActions.prototype.loadRevision = function(username, repository, revisi
         }
       });
 };
+
+/**
+ * @param {number} itemsPerPage
+ */
+RepositoryActions.prototype.setPageSize = function(itemsPerPage) {
+  this.pageSize_ = itemsPerPage;
+};
+
+/**
+ * @return {number} 
+ */
+RepositoryActions.prototype.getPageSize = function() {
+  return this.pageSize_;
+};
+
 
 module.exports = RepositoryActions;
 module.exports.ActionType = ActionType;

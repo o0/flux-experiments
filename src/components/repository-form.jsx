@@ -32,6 +32,7 @@ var RepositoryForm = React.createClass({
         on(RepositoryStore.EventType.REPOSITORIES_LOAD_ERROR, this.onStoreChange_);
 
     this.getDOMNode()['repository-form-author'].focus();
+    this.checkValidity();
   },
 
   componentWillUnmount: function() {
@@ -48,6 +49,10 @@ var RepositoryForm = React.createClass({
 
     return (<form className="form-overlay" onChange={this.onChange_} onSubmit={this.onSubmit_}>
       <fieldset className="form-overlay-content">
+        <div className="form-overlay-intro">
+          <img src="/GitHub-Mark-32px.png" />
+        </div>
+
         <label className="form-overlay-label" htmlFor="repository-form-author">Author</label>
         <input className="form-overlay-input" id="repository-form-author" onBlur={this.onAuthorEntered_} required="true" type="text" />
         <br />
@@ -85,8 +90,8 @@ var RepositoryForm = React.createClass({
     this.checkValidity(function() {
       if (this.state.formIsValid) {
         var formElement = this.getDOMNode();
-        repositoryActions.loadRepository(formElement['repository-form-author'].value,
-                                         formElement['repository-form-name'].value);
+        repositoryActions.loadRevisions(formElement['repository-form-author'].value,
+                                        formElement['repository-form-name'].value);
 
         // fixme: quick fix. Save state and show a loader.
         formElement['repository-form-submit'].disabled = true;

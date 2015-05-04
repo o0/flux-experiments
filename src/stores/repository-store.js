@@ -45,13 +45,23 @@ var RepositoryStore = function() {
         this.emit(EventType.REPOSITORIES_LOAD_ERROR);
         break;
 
-      case RepositoryActions.ActionType.LOAD_REPOSITORY:
+      case RepositoryActions.ActionType.LOAD_REVISIONS:
+        var replace = this.repositoryName_ !== payload.repositoryName;
+
         this.repositoryName_ = payload.repositoryName;
-        this.setRevisionsList(payload.revisions);
+        // NB! This might cause a problem if number of revisions on the last page
+        // equal the last page size. In this case user might make one additional 
+        // request.
+        this.nextPageIsAvailable_ = payload.revisions.length === repositoryActions.getPageSize()
+        this.setRevisionsList(payload.revisions, replace);
         break;
 
       case RepositoryActions.ActionType.LOAD_REVISION:
         this.setRevision(payload.revision);
+        break;
+
+      case RepositoryActions.ActionType.SET_PAGE_SIZE:
+        this.setPageSize(payload.pageSize);
         break;
     }
   }.bind(this));
@@ -72,6 +82,12 @@ RepositoryStore.prototype.repositoriesList_ = [];
 RepositoryStore.prototype.revisionsList_ = [];
 
 /**
+ * @type {Array.<string>}
+ * @private
+ */
+RepositoryStore.prototype.revisionsHashes_ = [];
+
+/**
  * @type {string}
  * @private
  */
@@ -83,7 +99,6 @@ RepositoryStore.prototype.repositoryName_ = null;
  */
 RepositoryStore.prototype.revisionHash_ = null;
 
-// todo: Merge with revisionHash_?
 /**
  * @type {Object}
  * @private
@@ -101,6 +116,12 @@ RepositoryStore.prototype.username_ = null;
  * @private
  */
 RepositoryStore.prototype.errorMessage_ = '';
+
+/**
+ * @type {boolean}
+ * @private
+ */
+RepositoryStore.prototype.nextPageIsAvailable_ = true;
 
 /**
  * @param {string} username
@@ -137,9 +158,29 @@ RepositoryStore.prototype.getErrorMessage = function() {
 
 /**
  * @param {Array.<Object>} revisionsList
+ * @param {boolean=} replace
  */
-RepositoryStore.prototype.setRevisionsList = function(revisionsList) {
-  this.revisionsList_ = revisionsList;
+RepositoryStore.prototype.setRevisionsList = function(revisionsList, replace) {
+  if (replace) {
+    this.revisionsList_ = [];
+    this.revisionsHashes_ = [];
+  }
+
+  // NB! Merge the list of revisions. Numbers of pages are calculated
+  // dynamically with respect to the current height of page so some
+  // revisions could be loaded twice if page size was increased.
+  // For example page size was initially 10 and then after page resize
+  // it became 60. In this case RepositoryActions would load first page
+  // for the second time because 50 items from it are not shown.
+  this.revisionsList_ = this.revisionsList_.concat(revisionsList.filter(function(revision) {
+    if (this.revisionsHashes_.indexOf(revision.sha) === -1) {
+      this.revisionsHashes_.push(revision.sha);
+      return true;
+    }
+
+    return false;
+  }, this));
+
   this.emit(RepositoryStore.EventType.SET_REVISIONS_LIST);
 };
 
@@ -171,6 +212,20 @@ RepositoryStore.prototype.setRevision = function(revision) {
  */
 RepositoryStore.prototype.getRevisionHash = function() {
   return this.revisionHash_;
+};
+
+/**
+ * @return {Object}
+ */
+RepositoryStore.prototype.getRevision = function() {
+  return this.revision_;
+}
+
+/**
+ * @param {boolean}
+ */
+RepositoryStore.prototype.isNextPageAvailable = function() {
+  return this.nextPageIsAvailable_;
 };
 
 

@@ -30,12 +30,19 @@
 
 .structure-revisions {
   width: 40%;
+  text-align: center;
+}
+
+.structure-revisions-more {
+  text-align: center;
+  margin: 10px auto;
 }
 
 .structure-revision {
   box-sizing: border-box;
   padding: 5px 15px;
   overflow: hidden;
+  text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
 
@@ -57,6 +64,10 @@
   background: #09f;
   color: #fff;
   cursor: default;
+}
+
+.structure-revision-hidden {
+  visibility: hidden;
 }
 
 .structure-revision-details {

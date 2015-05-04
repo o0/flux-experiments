@@ -13,6 +13,7 @@ utils.makeSingleton = function(ctor) {
   };
 };
 
+
 /**
  * @param {*...} var_args 
  */
@@ -28,6 +29,7 @@ utils.makeObject = function(var_args) {
 
   return obj;
 };
+
 
 /**
  * @param {string} url
@@ -47,6 +49,7 @@ utils.makeRequest = function(url, method, callback, ctx) {
   return xhr;
 };
 
+
 /**
  * @enum {string}
  */
@@ -56,5 +59,6 @@ utils.RequestEventType = {
   LOAD: 'load',
   PROGRESS: 'progress'
 };
+
 
 module.exports = utils;
