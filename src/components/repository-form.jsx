@@ -6,6 +6,7 @@ var RepositoryActions = require('../actions/repository-actions');
 var repositoryActions = RepositoryActions.getInstance();
 var RepositoryStore = require('../stores/repository-store');
 var repositoryStore = RepositoryStore.getInstance();
+var utils = require('../utils/utils')
 
 
 /**
@@ -15,31 +16,48 @@ var repositoryStore = RepositoryStore.getInstance();
 var RepositoryForm = React.createClass({
   getDefaultProps: function() {
     return {
-      hidden: false
+      hidden: false,
+      isInline: false
     }
   },
 
   getInitialState: function() {
     return {
       errorMessage: repositoryStore.getErrorMessage(),
-      repositoriesList: repositoryStore.getRepositoriesList()
+      isLoading: false,
+      repositoriesList: repositoryStore.getRepositoriesList(),
+      repositoryName: repositoryStore.getRepositoryName(),
+      username: repositoryStore.getUserName()
     }
+  },
+
+  componentWillMount: function() {
+    this.setState({
+      className: new utils.ClassName(this.props.isInline ? 'form-inline' : 'form-overlay')
+    });
   },
 
   componentDidMount: function() {
     repositoryStore.
         on(RepositoryStore.EventType.SET_REPOSITORIES_LIST, this.onStoreChange_).
-        on(RepositoryStore.EventType.REPOSITORIES_LOAD_ERROR, this.onStoreChange_);
+        on(RepositoryStore.EventType.REPOSITORIES_LOAD_ERROR, this.onStoreChange_).
+        on(RepositoryStore.EventType.LOAD_START, this.onStoreChange_).
+        on(RepositoryStore.EventType.CHANGE, this.onStoreChange_);
 
-    this.getDOMNode()['repository-form-author'].focus();
+    if (!this.props.isInline) {
+      this.getDOMNode()['repository-form-author'].focus();
+    }
+
     this.checkValidity();
   },
 
   componentWillUnmount: function() {
     // fixme: This code doesn't work because I never call unmountComponent at this component.
     repositoryStore.
-        removeAllListeners(RepositoryStore.EventType.SET_REPOSITORIES_LIST, this.onStoreChange_);
-        removeAllListeners(RepositoryStore.EventType.REPOSITORIES_LOAD_ERROR, this.onStoreChange_);
+        removeAllListeners(RepositoryStore.EventType.SET_REPOSITORIES_LIST, this.onStoreChange_).
+        removeAllListeners(RepositoryStore.EventType.REPOSITORIES_LOAD_ERROR, this.onStoreChange_).
+        removeAllListeners(RepositoryStore.EventType.LOAD_START, this.onStoreChange_).
+        removeAllListeners(RepositoryStore.EventType.CHANGE, this.onStoreChange_);
   },
 
   render: function() {
@@ -47,22 +65,24 @@ var RepositoryForm = React.createClass({
       return null;
     }
 
-    return (<form className="form-overlay" onChange={this.onChange_} onSubmit={this.onSubmit_}>
-      <fieldset className="form-overlay-content">
-        <div className="form-overlay-intro">
+    var className = this.state.className;
+
+    return (<form className={className.getClassName()} onChange={this.onChange_} onSubmit={this.onSubmit_}>
+      <fieldset className={className.getClassName('content')}>
+        <div className={className.getClassName('intro')}>
           <img src="/GitHub-Mark-32px.png" />
         </div>
 
-        <label className="form-overlay-label" htmlFor="repository-form-author">Author</label>
-        <input className="form-overlay-input" id="repository-form-author" onBlur={this.onAuthorEntered_} required="true" type="text" />
+        <label className={className.getClassName('label')} htmlFor="repository-form-author">Author</label>
+        <input className={className.getClassName('input')} defaultValue={this.state.username} id="repository-form-author" onBlur={this.onAuthorEntered_} required="true" type="text" />
         <br />
 
-        <label className="form-overlay-label" htmlFor="repository-form-name">Repository</label>
-        <input className="form-overlay-input" id="repository-form-name" onBlur={this.onRepositoryEntered_} type="text" list="form-repositories-list" required="true" />
+        <label className={className.getClassName('label')} htmlFor="repository-form-name">Repository</label>
+        <input className={className.getClassName('input')} defaultValue={this.state.repositoryName} id="repository-form-name" onBlur={this.onRepositoryEntered_} type="text" list="form-repositories-list" required="true" />
         <br />
 
-        <input className="form-overlay-submit" id="repository-form-submit" type="submit" disabled={!this.state.formIsValid} value="Show" />
-        <span className="form-overlay-error" id="repository-error-message">{this.state.errorMessage}</span>
+        <input className={className.getClassName('submit')} id="repository-form-submit" type="submit" disabled={!this.state.formIsValid || this.state.isLoading} value="Show" />
+        <span className={className.getClassName('error')} id="repository-error-message">{this.state.errorMessage}</span>
       </fieldset>
 
       <datalist id="form-repositories-list">{this.state.repositoriesList.map(function(repositoryName) {
@@ -77,7 +97,8 @@ var RepositoryForm = React.createClass({
   onStoreChange_: function() {
     this.setState({
       errorMessage: repositoryStore.getErrorMessage(),
-      repositoriesList: repositoryStore.getRepositoriesList()
+      repositoriesList: repositoryStore.getRepositoriesList(),
+      isLoading: repositoryStore.isLoading()
     });
   },
 
@@ -92,9 +113,6 @@ var RepositoryForm = React.createClass({
         var formElement = this.getDOMNode();
         repositoryActions.loadRevisions(formElement['repository-form-author'].value,
                                         formElement['repository-form-name'].value);
-
-        // fixme: quick fix. Save state and show a loader.
-        formElement['repository-form-submit'].disabled = true;
       }
     }, this);
   },

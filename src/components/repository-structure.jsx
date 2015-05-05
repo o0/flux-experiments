@@ -72,7 +72,9 @@ var RepositoryStructure = React.createClass({
 
   render: function() {
     return (<div className="structure">
-      <div className="structure-repository structure-col"></div>
+      <div className="structure-repository structure-col">
+        {this.state.revisionsList.length ? <RepositoryForm isInline={true} /> : null}
+      </div>
       <div className="structure-revisions structure-col">
         {this.state.revisionsList.map(function(revision) {
           return <Revision key={revision.sha} 
@@ -95,8 +97,9 @@ var RepositoryStructure = React.createClass({
    */
   onSetRevisions_: function() {
     this.setState({
-      revisionsList: repositoryStore.getRevisionsList(),
-      isNextPageAvailable: repositoryStore.isNextPageAvailable()
+      activeRevision: repositoryStore.getRevision(),
+      isNextPageAvailable: repositoryStore.isNextPageAvailable(),
+      revisionsList: repositoryStore.getRevisionsList()
     });
   },
 
@@ -150,7 +153,11 @@ var RepositoryStructure = React.createClass({
    * @private
    */
   calculatePageSize_: function() {
-    var itemsPerPage = Math.ceil(this.getDOMNode().clientHeight / revisionSize_) - 1;
+    var itemsPerPage = Math.ceil(this.getDOMNode().clientHeight / revisionSize_) - 2;
+    if (itemsPerPage <= 0) {
+      itemsPerPage = 1;
+    } 
+
     repositoryActions.setPageSize(itemsPerPage);
   }
 });
@@ -279,7 +286,7 @@ var formatPatch = function(code) {
       });
 
       return <div className={className} 
-          key={[fileCounter_++, 'file', index, 'line'].join('')}>{line}</div>
+          key={[fileCounter_++, 'file', index, 'line'].join()}>{line}</div>
     })}
   </div>
 };

@@ -29,7 +29,8 @@ var ActionType = {
   LOAD_REVISIONS: 1,
   LOAD_REVISION: 2,
   REPOSITORIES_LOAD_ERROR: 3,
-  SET_PAGE_SIZE: 4
+  SET_PAGE_SIZE: 4,
+  LOAD_START: 5
 };
 
 
@@ -88,6 +89,10 @@ RepositoryActions.prototype.loadRevisions = function(username, repository, numbe
   if (!nextPage) {
     nextPage = 1;
   }
+
+  dispatcher.dispatch({
+    actionType: ActionType.LOAD_START
+  });
 
   utils.makeRequest(
       [

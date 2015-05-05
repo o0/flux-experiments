@@ -10,6 +10,8 @@ var utils = require('../utils/utils');
  * @enum {string}
  */
 var EventType = {
+  CHANGE: 'change',
+  LOAD_START: 'load-start',
   REPOSITORIES_LOAD_ERROR: 'repos-load-err',
   SET_REPOSITORIES_LIST: 'repos-set',
   SET_REVISIONS_LIST: 'revisions-set',
@@ -23,7 +25,14 @@ var EventType = {
 var RepositoryStore = function() {
   this.dispatcherHandler_ = dispatcher.register(function(payload) {
     switch (payload.actionType) {
+      case RepositoryActions.ActionType.LOAD_START:
+        this.isLoading_ = true;
+        this.emit(EventType.LOAD_START);
+        break;
+
       case RepositoryActions.ActionType.LOAD_REPOSITORIES:
+        this.isLoading_ = false;
+
         if (payload.repositories.length === 0) {
           this.errorMessage_ = ['User', this.getUserName(), 'doesn\'t have repositories'].join(' ')
           this.repositoriesList_ = [];
@@ -35,10 +44,14 @@ var RepositoryStore = function() {
         this.errorMessage_ = '';
         this.repositoriesList = [];
         this.repositoryName_ = '';
+        this.revision_ = null;
+        this.revisionHash_ = null;
         this.setRepositoriesList(payload.username, payload.repositories);
         break;
 
       case RepositoryActions.ActionType.REPOSITORIES_LOAD_ERROR:
+        this.isLoading_ = false;
+
         this.errorMessage_ = payload.message;
         this.repositoriesList_ = [];
         this.repositoryName_ = '';
@@ -46,6 +59,8 @@ var RepositoryStore = function() {
         break;
 
       case RepositoryActions.ActionType.LOAD_REVISIONS:
+        this.isLoading_ = false;
+
         var replace = this.repositoryName_ !== payload.repositoryName;
 
         this.repositoryName_ = payload.repositoryName;
@@ -57,6 +72,7 @@ var RepositoryStore = function() {
         break;
 
       case RepositoryActions.ActionType.LOAD_REVISION:
+        this.isLoading_ = false;
         this.setRevision(payload.revision);
         break;
 
@@ -124,6 +140,12 @@ RepositoryStore.prototype.errorMessage_ = '';
 RepositoryStore.prototype.nextPageIsAvailable_ = true;
 
 /**
+ * @type {boolean}
+ * @private
+ */
+RepositoryStore.prototype.isLoading_ = true;
+
+/**
  * @param {string} username
  * @param {Array.<Object>} repositories raw response from github api.
  */
@@ -133,6 +155,7 @@ RepositoryStore.prototype.setRepositoriesList = function(username, repositories)
     return item.name;
   }) : [];
   this.emit(EventType.SET_REPOSITORIES_LIST);
+  this.emit(EventType.CHANGE);
 };
 
 /**
@@ -182,6 +205,7 @@ RepositoryStore.prototype.setRevisionsList = function(revisionsList, replace) {
   }, this));
 
   this.emit(RepositoryStore.EventType.SET_REVISIONS_LIST);
+  this.emit(EventType.CHANGE);
 };
 
 /**
@@ -205,6 +229,7 @@ RepositoryStore.prototype.setRevision = function(revision) {
   this.revision_ = revision;
   this.revisionHash_ = revision.sha;
   this.emit(EventType.SET_REVISION);
+  this.emit(EventType.CHANGE);
 };
 
 /**
@@ -222,11 +247,18 @@ RepositoryStore.prototype.getRevision = function() {
 }
 
 /**
- * @param {boolean}
+ * @return {boolean}
  */
 RepositoryStore.prototype.isNextPageAvailable = function() {
   return this.nextPageIsAvailable_;
 };
+
+/**
+ * @return {boolean}
+ */
+RepositoryStore.prototype.isLoading = function() {
+  return this.isLoading_;
+}
 
 
 module.exports = RepositoryStore;
