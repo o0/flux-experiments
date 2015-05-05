@@ -17,6 +17,13 @@ var revisionSize_ = 0;
 
 
 /**
+ * @type {Object.<string, ReactComponent>}
+ * @private
+ */
+var revisionsCache_ = {};
+
+
+/**
  * @constructor
  * @extends {ReactComponent}
  */ 
@@ -71,6 +78,13 @@ var RepositoryStructure = React.createClass({
   },
 
   render: function() {
+    var activeRevisionId = this.state.activeRevision ? this.state.activeRevision.sha : 'nil';
+    if (!revisionsCache_[activeRevisionId]) {
+      revisionsCache_[activeRevisionId] = <RevisionDetails revision={this.state.activeRevision} />;
+    }
+
+    var activeRevision = revisionsCache_[activeRevisionId];
+
     return (<div className="structure">
       <div className="structure-repository structure-col">
         {this.state.revisionsList.length ? <RepositoryForm isInline={true} /> : null}
@@ -81,14 +95,14 @@ var RepositoryStructure = React.createClass({
               isActive={this.state.activeRevision && this.state.activeRevision.sha === revision.sha} 
               revision={revision} onClick={function(evt) {
                 this.onRevisionClick_.call(this, evt, revision.sha);
-              }.bind(this)} />
+              }.bind(this)} />;
         }, this)}
 
         {this.state.isNextPageAvailable && this.state.revisionsList.length ? 
           <button type="button" className="structure-revisions-more" onClick={this.onMoreClick_}>Show more</button> :
           null}
       </div>
-      <RevisionDetails revision={this.state.activeRevision} />
+      {activeRevision}
     </div>);
   },
 
