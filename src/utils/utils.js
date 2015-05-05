@@ -1,5 +1,34 @@
 var utils = {};
 
+
+/**
+ * @param {string} baseClassName
+ */
+utils.ClassName = function(baseClassName) {
+  this.setBaseClassName(baseClassName);
+};
+
+/**
+ * @param {string} baseClassName
+ */
+utils.ClassName.prototype.setBaseClassName = function(baseClassName) {
+  /**
+   * @type {string}
+   * @private
+   */
+  this.baseClassName_ = baseClassName;
+};
+
+/**
+ * @param {...string} var_args
+ * @return {string}
+ */
+utils.ClassName.prototype.getClassName = function(var_args) {
+  var classes = [].slice.call(arguments, 0);
+  return [this.baseClassName_].concat(classes).join('-');
+}
+
+
 /**
  * @param {function} ctor
  */
