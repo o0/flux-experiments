@@ -62,6 +62,10 @@ var RepositoryStructure = React.createClass({
   },
 
   componentWillUnmount: function() {
+    repositoryStore.
+        removeAllListeners(RepositoryStore.EventType.SET_REVISIONS_LIST).
+        removeAllListeners(RepositoryStore.EventType.SET_REVISION);
+
     window.removeEventListener('resize', this.onResize_);
   },
 
@@ -77,11 +81,11 @@ var RepositoryStructure = React.createClass({
               }.bind(this)} />
         }, this)}
 
-        {this.state.isNextPageAvailable ? 
+        {this.state.isNextPageAvailable && this.state.revisionsList.length ? 
           <button type="button" className="structure-revisions-more" onClick={this.onMoreClick_}>Show more</button> :
           null}
       </div>
-      <div className="structure-revision-details structure-col structure-revision-details-empty"></div>
+      <RevisionDetails />
     </div>);
   },
 
@@ -174,11 +178,10 @@ var Revision = React.createClass({
     var className = React.addons.classSet({
       'structure-revision': true,
       'structure-revision-active': this.props.isActive,
-      'structure-revision-clicked': this.state.isClicked,
-      'structure-revision-hidden': this.props.isHidden
+      'structure-revision-clicked': this.state.isClicked
     });
 
-    return <div className={className} onClick={function(evt) {
+    return <div className={className} style={{ visibility: this.props.isHidden ? 'hidden' : 'visible' }} onClick={function(evt) {
         if (typeof this.props.onClick === 'function') {
           this.setState({ isClicked: true });
           this.props.onClick(evt);
@@ -188,6 +191,30 @@ var Revision = React.createClass({
       <small>{this.props.revision.commit.committer.name},
       {new Date(this.props.revision.commit.committer.date).toLocaleString()}</small>
     </div>;
+  }
+});
+
+
+/**
+ * @constructor
+ * @extends {ReactComponent}
+ * @private
+ */
+var RevisionDetails = React.createClass({
+  getInitialState: function() {
+    return {
+      revision: repositoryStore.getRevision()
+    }
+  },
+
+  render: function() {
+    var className = React.addons.classSet({
+      'structure-revision-details': true,
+      'structure-col': true,
+      'structure-revision-details-empty': this.state.revision == null
+    });
+
+    return (<div className={className}>{this.state.revision !== null ? '' : ''}</div>);
   }
 });
 
