@@ -7,6 +7,7 @@ var repositoryActions = RepositoryActions.getInstance();
 var RepositoryForm = require('./repository-form.jsx');
 var RepositoryStore = require('../stores/repository-store');
 var repositoryStore = RepositoryStore.getInstance();
+var utils = require('../utils/utils');
 
 
 /**
@@ -244,8 +245,10 @@ var RevisionDetails = React.createClass({
         </div>
         <div className="structure-revision-details-stats">
           {this.props.revision.files.length} {this.props.revision.files.length % 10 === 1 ? 'file' : 'files'} changed
-          {this.props.revision.stats.additions ? <span className="structure-revision-details-stats-additions">+{this.props.revision.stats.additions}</span> : ''}
-          {this.props.revision.stats.deletions ? <span className="structure-revision-details-stats-deletions">–{this.props.revision.stats.deletions}</span> : ''}
+          {this.props.revision.stats.additions ? 
+              <span className="structure-revision-details-stats-additions">+{this.props.revision.stats.additions}</span> : ''}
+          {this.props.revision.stats.deletions ? 
+              <span className="structure-revision-details-stats-deletions">–{this.props.revision.stats.deletions}</span> : ''}
         </div>
 
         {this.props.revision.files.map(function(file, index) {
@@ -290,14 +293,14 @@ var fileCounter_ = 0;
  */
 var formatPatch = function(code) {
   var codeLines = code.split('\n');
-  return <div className="structure-revision-details-file-source">
+  var lineClassName = new utils.ClassName('structure-revision-details-file-source');
+  return <div className={lineClassName.getClassName()}>
     {codeLines.map(function(line, index) {
-      var className = React.addons.classSet({
-        'structure-revision-details-file-source-line': true,
-        'structure-revision-details-file-source-line-added': /^\+/.test(line),
-        'structure-revision-details-file-source-line-deleted': /^\-/.test(line),
-        'structure-revision-details-file-source-line-service': /^@@/.test(line),
-      });
+      var className = React.addons.classSet(utils.makeObject(
+          lineClassName.getClassName('line'), true,
+          lineClassName.getClassName('line', 'added'), /^\+/.test(line),
+          lineClassName.getClassName('line', 'deleted'), /^\-/.test(line),
+          lineClassName.getClassName('line', 'service'), /^@@/.test(line)));
 
       return <div className={className} 
           key={[fileCounter_++, 'file', index, 'line'].join()}>{line}</div>

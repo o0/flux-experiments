@@ -94,12 +94,10 @@ RepositoryActions.prototype.loadRevisions = function(username, repository, numbe
     actionType: ActionType.LOAD_START
   });
 
-  utils.makeRequest(
-      [
+  utils.makeRequest([
         [API_URL, RequestType.REPOSITORY, username, repository, 'commits'].join('/'),
         this.pageSize_ !== Infinity ? ['?page=', nextPage, '&per_page=', this.pageSize_].join('') : ''
-      ].join(''), 'get', 
-      function(event) {
+      ].join(''), 'get', function(event) {
         var xhr = event.target;
 
         if (xhr.status === 200) {
