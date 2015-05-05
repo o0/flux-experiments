@@ -294,6 +294,7 @@ var fileCounter_ = 0;
 var formatPatch = function(code) {
   var codeLines = code.split('\n');
   var lineClassName = new utils.ClassName('structure-revision-details-file-source');
+
   return <div className={lineClassName.getClassName()}>
     {codeLines.map(function(line, index) {
       var className = React.addons.classSet(utils.makeObject(

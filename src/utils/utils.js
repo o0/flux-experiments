@@ -51,7 +51,7 @@ utils.makeObject = function(var_args) {
   var obj = {};
 
   args.forEach(function(arg, index) {
-    if (index % 2 != 0) {
+    if (index % 2 == 0) {
       obj[arg] = args[index + 1];
     }
   });
