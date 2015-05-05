@@ -26,6 +26,7 @@ var RepositoryStructure = React.createClass({
       activeRevision: repositoryStore.getRevisionHash(),
       isNextPageAvailable: repositoryStore.isNextPageAvailable(),
       repositoriesList: repositoryStore.getRepositoriesList(),
+      revision: repositoryStore.getRevision(),
       revisionsList: repositoryStore.getRevisionsList(),
       username: repositoryStore.getUserName()
     }
@@ -63,8 +64,8 @@ var RepositoryStructure = React.createClass({
 
   componentWillUnmount: function() {
     repositoryStore.
-        removeAllListeners(RepositoryStore.EventType.SET_REVISIONS_LIST).
-        removeAllListeners(RepositoryStore.EventType.SET_REVISION);
+        removeListener(RepositoryStore.EventType.SET_REVISIONS_LIST, this.onSetRevisions_).
+        removeListener(RepositoryStore.EventType.SET_REVISION, this.onSetRevision_);
 
     window.removeEventListener('resize', this.onResize_);
   },
@@ -75,7 +76,7 @@ var RepositoryStructure = React.createClass({
       <div className="structure-revisions structure-col">
         {this.state.revisionsList.map(function(revision) {
           return <Revision key={revision.sha} 
-              isActive={this.state.activeRevision === revision.sha} 
+              isActive={this.state.activeRevision && this.state.activeRevision.sha === revision.sha} 
               revision={revision} onClick={function(evt) {
                 this.onRevisionClick_.call(this, evt, revision.sha);
               }.bind(this)} />
@@ -85,7 +86,7 @@ var RepositoryStructure = React.createClass({
           <button type="button" className="structure-revisions-more" onClick={this.onMoreClick_}>Show more</button> :
           null}
       </div>
-      <RevisionDetails />
+      <RevisionDetails revision={this.state.activeRevision} />
     </div>);
   },
 
@@ -104,7 +105,7 @@ var RepositoryStructure = React.createClass({
    */
   onSetRevision_: function() {
     this.setState({
-      activeRevision: repositoryStore.getRevisionHash()
+      activeRevision: repositoryStore.getRevision()
     });
   },
 
@@ -181,14 +182,18 @@ var Revision = React.createClass({
       'structure-revision-clicked': this.state.isClicked
     });
 
-    return <div className={className} style={{ visibility: this.props.isHidden ? 'hidden' : 'visible' }} onClick={function(evt) {
-        if (typeof this.props.onClick === 'function') {
-          this.setState({ isClicked: true });
-          this.props.onClick(evt);
-        }
-      }.bind(this)}>
+    return <div className={className} 
+        style={{ visibility: this.props.isHidden ? 'hidden' : 'visible' }} 
+        onClick={function(evt) {
+          if (typeof this.props.onClick === 'function') {
+            evt.preventDefault();
+
+            this.setState({ isClicked: true });
+            this.props.onClick(evt);
+          }
+        }.bind(this)}>
       {this.props.revision.commit.message}<br />
-      <small>{this.props.revision.commit.committer.name},
+      <small>{this.props.revision.commit.committer.name},{' '}
       {new Date(this.props.revision.commit.committer.date).toLocaleString()}</small>
     </div>;
   }
@@ -201,22 +206,83 @@ var Revision = React.createClass({
  * @private
  */
 var RevisionDetails = React.createClass({
-  getInitialState: function() {
-    return {
-      revision: repositoryStore.getRevision()
-    }
-  },
-
   render: function() {
     var className = React.addons.classSet({
       'structure-revision-details': true,
       'structure-col': true,
-      'structure-revision-details-empty': this.state.revision == null
+      'structure-revision-details-empty': this.props.revision == null
     });
 
-    return (<div className={className}>{this.state.revision !== null ? '' : ''}</div>);
+    var el = this.props.revision === null ? 
+      <div className={className} /> : 
+      <div className={className}>
+        <div className="structure-revision-details-title">{this.props.revision.commit.message}</div>
+        <div className="structure-revision-details-info">
+          Changes committed {this.props.revision.commit.committer.date}{' '}
+          by <a href={this.props.revision.commit.committer.htmlUrl}>{this.props.revision.commit.committer.name}</a>
+        </div>
+        <div className="structure-revision-details-stats">
+          {this.props.revision.files.length} {this.props.revision.files.length % 10 === 1 ? 'file' : 'files'} changed
+          {this.props.revision.stats.additions ? <span className="structure-revision-details-stats-additions">+{this.props.revision.stats.additions}</span> : ''}
+          {this.props.revision.stats.deletions ? <span className="structure-revision-details-stats-deletions">–{this.props.revision.stats.deletions}</span> : ''}
+        </div>
+
+        {this.props.revision.files.map(function(file, index) {
+          var className = React.addons.classSet({
+            'structure-revision-details-file': true,
+            'structure-revision-details-file-deleted': file.status === 'deleted',
+            'structure-revision-details-file-added': file.status === 'modified'
+          });
+
+          return <div key={file.filename} className={className}>
+            <div className="structure-revision-details-file-stats">
+              {file.status === 'deleted' ? <span>Deleted </span> : ''}
+              {file.status === 'added' ? <span>Added </span> : ''}
+              <span className="structure-revision-details-file-stats-filename">{file.filename}</span>
+              {' '}
+              <span className="structure-revision-details-stats">
+                {file.additions ? <span className="structure-revision-details-stats-additions">+{file.additions}</span> : ''}
+                {file.deletions ? <span className="structure-revision-details-stats-deletions">–{file.deletions}</span> : ''}
+              </span>
+            </div>
+
+            {file.status === 'modified' ? formatPatch(file.patch) : null}
+          </div>
+        }, this)}
+      </div>;
+
+    return el;
   }
 });
+
+
+/**
+ * @type {number}
+ * @private
+ */
+var fileCounter_ = 0;
+
+
+/**
+ * @param {string} code
+ * @return {ReactComponent}
+ */
+var formatPatch = function(code) {
+  var codeLines = code.split('\n');
+  return <div className="structure-revision-details-file-source">
+    {codeLines.map(function(line, index) {
+      var className = React.addons.classSet({
+        'structure-revision-details-file-source-line': true,
+        'structure-revision-details-file-source-line-added': /^\+/.test(line),
+        'structure-revision-details-file-source-line-deleted': /^\-/.test(line),
+        'structure-revision-details-file-source-line-service': /^@@/.test(line),
+      });
+
+      return <div className={className} 
+          key={[fileCounter_++, 'file', index, 'line'].join('')}>{line}</div>
+    })}
+  </div>
+};
 
 
 module.exports = RepositoryStructure;
