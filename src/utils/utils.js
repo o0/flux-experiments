@@ -64,13 +64,22 @@ utils.makeObject = function(var_args) {
  * @param {string} url
  * @param {string} method
  * @param {function=} callback
+ * @param {function=} failCallback
  * @param {*=} ctx
  */
-utils.makeRequest = function(url, method, callback, ctx) {
+utils.makeRequest = function(url, method, callback, failCallback, ctx) {
   var xhr = new XMLHttpRequest();
+  var timeout = setTimeout(function() {
+    if (typeof failCallback !== 'undefined') {
+      failCallback();
+    }
+  });
 
   if (typeof callback !== 'undefined') {
-    xhr.onload = callback.bind(ctx);
+    xhr.onload = function(evt) {
+      clearTimeout(timeout);
+      callback.call(ctx, evt);
+    }
   }
 
   xhr.open(method, url, true);

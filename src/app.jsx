@@ -2,6 +2,7 @@
 
 var AppView = require('./components/app-view.jsx');
 var NavActions = require('./actions/nav-actions');
+var navActions = NavActions.getInstance();
 var NavActionType = NavActions.NavActionType;
 var React = require('react');
 
@@ -15,7 +16,7 @@ var App = function() {
    * @private
    */
   this.appView_ = React.render(<AppView />, document.querySelector('.layout'));
-  NavActions.navigate(NavActionType.INDEX);
+  navActions.navigate(NavActionType.INDEX);
 };
 
 

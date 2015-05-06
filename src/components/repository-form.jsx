@@ -4,6 +4,8 @@ require('./repository-form.scss');
 var React = require('react/addons');
 var RepositoryActions = require('../actions/repository-actions');
 var repositoryActions = RepositoryActions.getInstance();
+var NavActions = require('../actions/nav-actions');
+var navActions = NavActions.getInstance();
 var RepositoryStore = require('../stores/repository-store');
 var repositoryStore = RepositoryStore.getInstance();
 var utils = require('../utils/utils')
@@ -111,8 +113,11 @@ var RepositoryForm = React.createClass({
     this.checkValidity(function() {
       if (this.state.formIsValid) {
         var formElement = this.getDOMNode();
-        repositoryActions.loadRevisions(formElement['repository-form-author'].value,
-                                        formElement['repository-form-name'].value);
+        var username = formElement['repository-form-author'].value;
+        var repositoryName = formElement['repository-form-name'].value;
+        
+        //navActions.navigate(NavActions.NavActionType.REPOSITORY, username, repositoryName);
+        repositoryActions.loadRevisions(username, repositoryName);
       }
     }, this);
   },
