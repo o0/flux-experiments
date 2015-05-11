@@ -16,7 +16,7 @@ var App = function() {
    * @private
    */
   this.appView_ = React.render(<AppView />, document.querySelector('.layout'));
-  navActions.navigate(NavActionType.INDEX);
+  navActions.catchUp();
 };
 
 

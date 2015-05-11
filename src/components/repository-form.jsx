@@ -97,11 +97,13 @@ var RepositoryForm = React.createClass({
    * @private
    */ 
   onStoreChange_: function() {
-    this.setState({
-      errorMessage: repositoryStore.getErrorMessage(),
-      repositoriesList: repositoryStore.getRepositoriesList(),
-      isLoading: repositoryStore.isLoading()
-    });
+    if (this.isMounted()) {
+      this.setState({
+        errorMessage: repositoryStore.getErrorMessage(),
+        repositoriesList: repositoryStore.getRepositoriesList(),
+        isLoading: repositoryStore.isLoading()
+      });
+    }
   },
 
   /**

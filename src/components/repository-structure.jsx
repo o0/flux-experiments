@@ -64,26 +64,21 @@ var RepositoryStructure = React.createClass({
   },
 
   componentDidMount: function() {
-    repositoryStore.
-        on(RepositoryStore.EventType.SET_REVISIONS_LIST, this.onSetRevisions_).
-        on(RepositoryStore.EventType.SET_REVISION, this.onSetRevision_);
-
+    repositoryStore.on(RepositoryStore.EventType.CHANGE, this.onStoreChange_);
     window.addEventListener('resize', this.onResize_);
+
     this.calculatePageSize_();
   },
 
   componentWillUnmount: function() {
-    repositoryStore.
-        removeListener(RepositoryStore.EventType.SET_REVISIONS_LIST, this.onSetRevisions_).
-        removeListener(RepositoryStore.EventType.SET_REVISION, this.onSetRevision_);
-
+    repositoryStore.removeListener(RepositoryStore.EventType.CHANGE, this.onStoreChange_);
     window.removeEventListener('resize', this.onResize_);
   },
 
   render: function() {
-    var activeRevisionId = this.state.activeRevision ? this.state.activeRevision.sha : 'nil';
+    var activeRevisionId = this.state.activeRevision ? this.state.activeRevision : 'nil';
     if (!revisionsCache_[activeRevisionId]) {
-      revisionsCache_[activeRevisionId] = <RevisionDetails revision={this.state.activeRevision} />;
+      revisionsCache_[activeRevisionId] = <RevisionDetails revision={this.state.revision} />;
     }
 
     var activeRevision = revisionsCache_[activeRevisionId];
@@ -95,7 +90,7 @@ var RepositoryStructure = React.createClass({
       <div className="structure-revisions structure-col">
         {this.state.revisionsList.map(function(revision) {
           return <Revision key={revision.sha} 
-              isActive={this.state.activeRevision && this.state.activeRevision.sha === revision.sha} 
+              isActive={this.state.activeRevision && this.state.activeRevision === revision.sha} 
               revision={revision} onClick={function(evt) {
                 this.onRevisionClick_.call(this, evt, revision.sha);
               }.bind(this)} />;
@@ -109,23 +104,14 @@ var RepositoryStructure = React.createClass({
     </div>);
   },
 
-  /**
-   * @private
-   */
-  onSetRevisions_: function() {
+  onStoreChange_: function() {
     this.setState({
-      activeRevision: repositoryStore.getRevision(),
+      activeRevision: repositoryStore.getRevisionHash(),
       isNextPageAvailable: repositoryStore.isNextPageAvailable(),
-      revisionsList: repositoryStore.getRevisionsList()
-    });
-  },
-
-  /**
-   * @private
-   */
-  onSetRevision_: function() {
-    this.setState({
-      activeRevision: repositoryStore.getRevision()
+      repositoriesList: repositoryStore.getRepositoriesList(),
+      revision: repositoryStore.getRevision(),
+      revisionsList: repositoryStore.getRevisionsList(),
+      username: repositoryStore.getUserName()
     });
   },
 
@@ -194,7 +180,7 @@ var Revision = React.createClass({
     // NB! Immediate reaction to user's click on revision. While interacting with
     // server, revision doesn't highlighted after click so user might decide that
     // there's some lag.
-    if (nextProps.isActive !== this.props.isActive) {
+    if (this.isMounted() && nextProps.isActive !== this.props.isActive) {
       this.setState({ isClicked: false });
     }
   },

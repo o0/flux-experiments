@@ -3,6 +3,8 @@ var applicationStore = ApplicationStore.getInstance();
 var dispatcher = require('../dispatchers/dispatcher');
 var RepositoryActions = require('../actions/repository-actions');
 var repositoryActions = RepositoryActions.getInstance();
+var RepositoryStore = require('../stores/repository-store');
+var repositoryStore = RepositoryStore.getInstance();
 var url = require('url');
 var utils = require('../utils/utils');
 
@@ -47,6 +49,10 @@ NavActions.prototype.navigate = function(actionType, var_args) {
   this.handleNavigation_();
 };
 
+NavActions.prototype.catchUp = function() {
+  this.handleNavigation_();
+};
+
 /**
  * @param {Event} evt
  * @private
@@ -63,19 +69,38 @@ NavActions.prototype.handleNavigation_ = function() {
 
   switch (payload.actionType) {
     case NavActions.NavActionType.INDEX:
-      applicationStore.setStateEnabled(ApplicationStore.State.REPOSITORY_IS_LOADED, false);
+      repositoryActions.cleanup();
       break;
 
     case NavActions.NavActionType.REPOSITORY:
+      if (repositoryStore.getUserName() !== payload.username ||
+          repositoryStore.getRepositoryName() !== payload.repository) {
+        repositoryActions.loadRepositoriesList(payload.username, true, function() {
+          repositoryActions.loadRevisions(payload.username, payload.repository, 0);
+        });
+        break;
+      }
+
       repositoryActions.loadRevisions(payload.username, payload.repository);
       break;
 
     case NavActions.NavActionType.REVISION:
+      if (repositoryStore.getUserName() !== payload.username ||
+          repositoryStore.getRepositoryName() !== payload.repository) {
+        // fixme: A bit of a callback hell. It would be better to use some solution which allows
+        // to chain calls or batch all requests and send them in one piece.
+        repositoryActions.loadRepositoriesList(payload.username, true, function(event) {
+          repositoryActions.loadRevisions(payload.username, payload.repository, 0, true, function() {
+            repositoryActions.loadRevision(payload.username, payload.repository, payload.revision);
+          });
+        }, this);
+        break;
+      }
+
       repositoryActions.loadRevision(payload.username, payload.repository, payload.revision);
       break;
   }
 };
-
 
 /**
  * @return {{ actionType: actionType, data: Object }}

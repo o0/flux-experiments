@@ -9,8 +9,7 @@ var utils = require('../utils/utils');
  * @enum {number}
  */
 var State = {
-  NULL: 0x00,
-  REPOSITORY_IS_LOADED: 0x01
+  NULL: 0x00
 };
 
 
@@ -18,8 +17,7 @@ var State = {
  * @enum {string}
  */
 var EventType = {
-  CHANGE: 'change',
-  LOAD_REPOSITORY: 'load-repository'
+  CHANGE: 'change'
 };
 
 
@@ -27,16 +25,7 @@ var EventType = {
  * @constructor
  * @extends {EventEmitter}
  */
-var ApplicationStore = function() {
-  this.dispatchHandler_ = dispatcher.register(function(payload) {
-    switch (payload.actionType) {
-      case RepositoryActions.ActionType.LOAD_REVISIONS:
-        this.setStateEnabled(State.REPOSITORY_IS_LOADED, true);
-        this.emit(EventType.LOAD_REPOSITORY);
-        break;
-    }
-  }.bind(this));
-};
+var ApplicationStore = function() {};
 util.inherits(ApplicationStore, EventEmitter);
 utils.makeSingleton(ApplicationStore);
 

@@ -5,6 +5,8 @@ var ApplicationStore = require('../stores/application-store');
 var applicationStore = ApplicationStore.getInstance();
 var React = require('react/addons');
 var RepositoryForm = require('./repository-form.jsx');
+var RepositoryStore = require('../stores/repository-store');
+var repositoryStore = RepositoryStore.getInstance();
 var RepositoryStructure = require('./repository-structure.jsx');
 
 
@@ -15,18 +17,16 @@ var RepositoryStructure = require('./repository-structure.jsx');
 var AppView = React.createClass({
   getInitialState: function() {
     return {
-      repositoryFormIsHidden: applicationStore.hasState(ApplicationStore.State.REPOSITORY_IS_LOADED)
+      repositoryFormIsHidden: repositoryStore.getRevisionsList().length > 0
     }
   },
 
   componentDidMount: function() {
-    applicationStore.
-        on(ApplicationStore.EventType.LOAD_REPOSITORY, this.onApplicationStoreChange_).
-        on(ApplicationStore.EventType.SET_STATE, this.onApplicationStoreChange_);
+    repositoryStore.on(RepositoryStore.EventType.CHANGE, this.onStoreChange_);
   },
 
   componentWillUnmount: function() {
-    applicationStore.removeAllListeners(ApplicationStore.EventType.CHANGE);
+    repositoryStore.removeListener(RepositoryStore.EventType.CHANGE, this.onStoreChange_);
   },
 
   render: function() {
@@ -36,9 +36,10 @@ var AppView = React.createClass({
     </div>);
   },
 
-  onApplicationStoreChange_: function() {
+  /** @private */
+  onStoreChange_: function() {
     this.setState({
-      repositoryFormIsHidden: applicationStore.hasState(ApplicationStore.State.REPOSITORY_IS_LOADED)
+      repositoryFormIsHidden: repositoryStore.getRevisionsList().length > 0
     });
   }
 });

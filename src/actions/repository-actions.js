@@ -25,6 +25,7 @@ var RequestType = {
  * @enum {string}
  */
 var ActionType = {
+  CLEANUP: 'cleanup',
   LOAD_REPOSITORIES: 'load-repos',
   LOAD_REVISIONS: 'load-revisions',
   LOAD_REVISION: 'load-revision',
@@ -48,10 +49,19 @@ utils.makeSingleton(RepositoryActions);
  */
 RepositoryActions.prototype.pageSize_ = Infinity;
 
+RepositoryActions.prototype.cleanup = function() {
+  dispatcher.dispatch({
+    actionType: ActionType.CLEANUP
+  });
+};
+
 /**
  * @param {string} username
+ * @param {boolean=} silent
+ * @param {function=} callback
+ * @param {*=} ctx
  */
-RepositoryActions.prototype.loadRepositoriesList = function(username) {
+RepositoryActions.prototype.loadRepositoriesList = function(username, silent, callback, ctx) {
   var xhr = utils.makeRequest([API_URL, RequestType.USER_INFO, username, RequestType.REPOSITORY].join('/'), 'get', 
       function(event) {
         var xhr = event.target;
@@ -66,14 +76,18 @@ RepositoryActions.prototype.loadRepositoriesList = function(username) {
             });
             break;
 
-          case 200: 
           default:
             dispatcher.dispatch({
               actionType: ActionType.LOAD_REPOSITORIES,
               username: username,
-              repositories: JSON.parse(event.target.response)
+              repositories: JSON.parse(event.target.response),
+              silent: silent
             });
             break;
+        }
+
+        if (typeof callback !== 'undefined') {
+          callback.call(ctx, event);
         }
       });
 };
@@ -82,8 +96,12 @@ RepositoryActions.prototype.loadRepositoriesList = function(username) {
  * @param {string} username
  * @param {string} repository
  * @param {number=} numberOfLoadedRevisions
+ * @param {boolean=} silent
+ * @param {function=} callback
+ * @param {*=} ctx
  */
-RepositoryActions.prototype.loadRevisions = function(username, repository, numberOfLoadedRevisions) {
+RepositoryActions.prototype.loadRevisions = function(username, repository, numberOfLoadedRevisions, 
+                                                     silent, callback, ctx) {
   nextPage = Math.floor(numberOfLoadedRevisions / this.pageSize_) + 1;
 
   if (!nextPage) {
@@ -100,12 +118,19 @@ RepositoryActions.prototype.loadRevisions = function(username, repository, numbe
       ].join(''), 'get', function(event) {
         var xhr = event.target;
 
-        if (xhr.status === 200) {
+        // NB! A bit naive check.
+        if (xhr.status < 400) {
           dispatcher.dispatch({
             actionType: ActionType.LOAD_REVISIONS,
             repositoryName: repository,
-            revisions: JSON.parse(xhr.response)
+            revision: null,
+            revisions: JSON.parse(xhr.response),
+            silent: silent
           });
+        }
+
+        if (typeof callback !== 'undefined') {
+          callback.call(ctx, event);
         }
       });
 };
@@ -114,17 +139,27 @@ RepositoryActions.prototype.loadRevisions = function(username, repository, numbe
  * @param {string} username
  * @param {string} repository
  * @param {string} revisionHash
+ * @param {boolean=} silent
+ * @param {function=} callback
+ * @param {*=} ctx
  */
-RepositoryActions.prototype.loadRevision = function(username, repository, revisionHash) {
+RepositoryActions.prototype.loadRevision = function(username, repository, revisionHash, silent, callback, ctx) {
   utils.makeRequest([API_URL, RequestType.REPOSITORY, username, repository, 'commits', revisionHash].join('/'), 'get',
       function(event) {
         var xhr = event.target;
 
-        if (xhr.status === 200) {
+        if (xhr.status < 400) {
           dispatcher.dispatch({
             actionType: ActionType.LOAD_REVISION,
-            revision: JSON.parse(xhr.response)
+            repositoryName: repository,
+            revision: JSON.parse(xhr.response),
+            silent: silent,
+            username: username
           });
+        }
+
+        if (typeof callback !== 'undefined') {
+          callback.call(ctx, event);
         }
       });
 };

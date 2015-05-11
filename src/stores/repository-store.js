@@ -25,6 +25,15 @@ var EventType = {
 var RepositoryStore = function() {
   this.dispatcherHandler_ = dispatcher.register(function(payload) {
     switch (payload.actionType) {
+      case RepositoryActions.ActionType.CLEANUP:
+        this.setRepositoriesList(null, null, true);
+        this.setRevisionsList(null, true, true);
+        this.setRevision(null, true);
+        this.repositoryName_ = '';
+        this.errorMessage_ = '';
+        this.emit(EventType.CHANGE);
+        break;
+
       case RepositoryActions.ActionType.LOAD_START:
         this.isLoading_ = true;
         this.emit(EventType.LOAD_START);
@@ -42,11 +51,11 @@ var RepositoryStore = function() {
         }
 
         this.errorMessage_ = '';
-        this.repositoriesList = [];
+        this.repositoriesList_ = [];
         this.repositoryName_ = '';
         this.revision_ = null;
         this.revisionHash_ = null;
-        this.setRepositoriesList(payload.username, payload.repositories);
+        this.setRepositoriesList(payload.username, payload.repositories, payload.silent);
         break;
 
       case RepositoryActions.ActionType.REPOSITORIES_LOAD_ERROR:
@@ -68,12 +77,14 @@ var RepositoryStore = function() {
         // equal the last page size. In this case user might make one additional 
         // request.
         this.nextPageIsAvailable_ = payload.revisions.length === repositoryActions.getPageSize()
-        this.setRevisionsList(payload.revisions, replace);
+        this.revision_ = null;
+        this.revisionHash_ = null;
+        this.setRevisionsList(payload.revisions, replace, payload.silent);
         break;
 
       case RepositoryActions.ActionType.LOAD_REVISION:
         this.isLoading_ = false;
-        this.setRevision(payload.revision);
+        this.setRevision(payload.revision, payload.silent);
         break;
 
       case RepositoryActions.ActionType.SET_PAGE_SIZE:
@@ -204,7 +215,7 @@ RepositoryStore.prototype.setRevisionsList = function(revisionsList, replace, si
   // For example page size was initially 10 and then after page resize
   // it became 60. In this case RepositoryActions would load first page
   // for the second time because 50 items from it are not shown.
-  this.revisionsList_ = this.revisionsList_.concat(revisionsList.filter(function(revision) {
+  this.revisionsList_ = this.revisionsList_.concat((revisionsList || []).filter(function(revision) {
     if (this.revisionsHashes_.indexOf(revision.sha) === -1) {
       this.revisionsHashes_.push(revision.sha);
       return true;
@@ -214,7 +225,6 @@ RepositoryStore.prototype.setRevisionsList = function(revisionsList, replace, si
   }, this));
 
   if (!silent) {
-    this.emit(RepositoryStore.EventType.SET_REVISIONS_LIST);
     this.emit(EventType.CHANGE);
   }
 };
@@ -244,7 +254,6 @@ RepositoryStore.prototype.setRevision = function(revision, silent) {
   this.revisionHash_ = revision ? revision.sha : null;
 
   if (!silent) {
-    this.emit(EventType.SET_REVISION);
     this.emit(EventType.CHANGE);
   }
 };
