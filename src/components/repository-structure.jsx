@@ -223,13 +223,22 @@ var RevisionDetails = React.createClass({
       'structure-revision-details-empty': this.props.revision == null
     });
 
+    var authorUrl = '';
+    var authorPic = '';
+
+    if (this.props.revision && this.props.revision.committer) {
+      authorUrl = this.props.revision.committer.html_url;
+      authorPic = this.props.revision.committer.avatar_url;
+    }
+
     var el = this.props.revision === null ? 
       <div className={className} /> : 
       <div className={className}>
+        {authorPic ? <img src={authorPic} width="30" height="30" className='structure-revision-details-avatar' /> : null}
         <div className="structure-revision-details-title">{this.props.revision.commit.message}</div>
         <div className="structure-revision-details-info">
           Changes committed {this.props.revision.commit.committer.date}{' '}
-          by <a href={this.props.revision.commit.committer.htmlUrl}>{this.props.revision.commit.committer.name}</a>
+          {authorUrl ? (<span>by <a href={authorUrl}>{this.props.revision.commit.committer.name}</a></span>) : null}
         </div>
         <div className="structure-revision-details-stats">
           {this.props.revision.files.length} {this.props.revision.files.length % 10 === 1 ? 'file' : 'files'} changed
