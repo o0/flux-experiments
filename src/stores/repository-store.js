@@ -148,14 +148,20 @@ RepositoryStore.prototype.isLoading_ = true;
 /**
  * @param {string} username
  * @param {Array.<Object>} repositories raw response from github api.
+ * @param {boolean=} silent
  */
-RepositoryStore.prototype.setRepositoriesList = function(username, repositories) {
+RepositoryStore.prototype.setRepositoriesList = function(username, repositories, silent) {
+  silent = typeof silent === 'boolean' ? silent : false;
+
   this.username_ = username;
   this.repositoriesList_ = repositories ? repositories.map(function(item) {
     return item.name;
   }) : [];
-  this.emit(EventType.SET_REPOSITORIES_LIST);
-  this.emit(EventType.CHANGE);
+
+  if (!silent) {
+    this.emit(EventType.SET_REPOSITORIES_LIST);
+    this.emit(EventType.CHANGE);
+  }
 };
 
 /**
@@ -182,8 +188,11 @@ RepositoryStore.prototype.getErrorMessage = function() {
 /**
  * @param {Array.<Object>} revisionsList
  * @param {boolean=} replace
+ * @param {boolean=} silent
  */
-RepositoryStore.prototype.setRevisionsList = function(revisionsList, replace) {
+RepositoryStore.prototype.setRevisionsList = function(revisionsList, replace, silent) {
+  silent = typeof silent === 'boolean' ? silent : false;
+
   if (replace) {
     this.revisionsList_ = [];
     this.revisionsHashes_ = [];
@@ -204,8 +213,10 @@ RepositoryStore.prototype.setRevisionsList = function(revisionsList, replace) {
     return false;
   }, this));
 
-  this.emit(RepositoryStore.EventType.SET_REVISIONS_LIST);
-  this.emit(EventType.CHANGE);
+  if (!silent) {
+    this.emit(RepositoryStore.EventType.SET_REVISIONS_LIST);
+    this.emit(EventType.CHANGE);
+  }
 };
 
 /**
@@ -223,13 +234,19 @@ RepositoryStore.prototype.getRepositoryName = function() {
 };
 
 /**
- * @param {Object} revision
+ * @param {?Object} revision
+ * @param {boolean=} silent
  */
-RepositoryStore.prototype.setRevision = function(revision) {
+RepositoryStore.prototype.setRevision = function(revision, silent) {
+  silent = typeof silent === 'boolean' ? silent : false;
+
   this.revision_ = revision;
-  this.revisionHash_ = revision.sha;
-  this.emit(EventType.SET_REVISION);
-  this.emit(EventType.CHANGE);
+  this.revisionHash_ = revision ? revision.sha : null;
+
+  if (!silent) {
+    this.emit(EventType.SET_REVISION);
+    this.emit(EventType.CHANGE);
+  }
 };
 
 /**

@@ -116,8 +116,7 @@ var RepositoryForm = React.createClass({
         var username = formElement['repository-form-author'].value;
         var repositoryName = formElement['repository-form-name'].value;
         
-        //navActions.navigate(NavActions.NavActionType.REPOSITORY, username, repositoryName);
-        repositoryActions.loadRevisions(username, repositoryName);
+        navActions.navigate(NavActions.NavActionType.REPOSITORY, username, repositoryName);
       }
     }, this);
   },

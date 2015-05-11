@@ -22,15 +22,15 @@ var RequestType = {
 
 
 /**
- * @enum {number}
+ * @enum {string}
  */
 var ActionType = {
-  LOAD_REPOSITORIES: 0,
-  LOAD_REVISIONS: 1,
-  LOAD_REVISION: 2,
-  REPOSITORIES_LOAD_ERROR: 3,
-  SET_PAGE_SIZE: 4,
-  LOAD_START: 5
+  LOAD_REPOSITORIES: 'load-repos',
+  LOAD_REVISIONS: 'load-revisions',
+  LOAD_REVISION: 'load-revision',
+  REPOSITORIES_LOAD_ERROR: 'load-repos-error',
+  SET_PAGE_SIZE: 'set-page-size',
+  LOAD_START: 'load-start'
 };
 
 

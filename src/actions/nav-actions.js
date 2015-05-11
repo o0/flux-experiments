@@ -1,16 +1,20 @@
+var ApplicationStore = require('../stores/application-store');
+var applicationStore = ApplicationStore.getInstance();
 var dispatcher = require('../dispatchers/dispatcher');
+var RepositoryActions = require('../actions/repository-actions');
+var repositoryActions = RepositoryActions.getInstance();
 var url = require('url');
 var utils = require('../utils/utils');
 
 
 /**
  * Possible types of navigation between application states (urls).
- * @enum {number}
+ * @enum {string}
  */
 var NavActionType = {
-  INDEX: 0,
-  REPOSITORY: 1,
-  REVISION: 2
+  INDEX: 'nav-index',
+  REPOSITORY: 'nav-repository',
+  REVISION: 'nav-revision'
 };
 
 
@@ -36,9 +40,11 @@ NavActions.prototype.navigate = function(actionType, var_args) {
   var neededParams = actionType === NavActionType.REPOSITORY ? 2 : 
       (actionType === NavActionType.REVISION ? 3 : 0);
 
-  var params = [].slice.call(arguments, 1, from + neededParams);
+  // NB! First empty element is a bit hacky but solid way
+  // to fully replace path.
+  var params = [''].concat([].slice.call(arguments, 1, from + neededParams));
   history.pushState(null, null, params.join('/'));
-  dispatcher.dispatch(this.getDataFromURL_());
+  this.handleNavigation_();
 };
 
 /**
@@ -46,8 +52,30 @@ NavActions.prototype.navigate = function(actionType, var_args) {
  * @private
  */
 NavActions.prototype.onHistoryChange_ = function(evt) {
-  dispatcher.dispatch(this.getDataFromURL_());
+  this.handleNavigation_();
 };
+
+/**
+ * @private
+ */
+NavActions.prototype.handleNavigation_ = function() {
+  var payload = this.getDataFromURL_();
+
+  switch (payload.actionType) {
+    case NavActions.NavActionType.INDEX:
+      applicationStore.setStateEnabled(ApplicationStore.State.REPOSITORY_IS_LOADED, false);
+      break;
+
+    case NavActions.NavActionType.REPOSITORY:
+      repositoryActions.loadRevisions(payload.username, payload.repository);
+      break;
+
+    case NavActions.NavActionType.REVISION:
+      repositoryActions.loadRevision(payload.username, payload.repository, payload.revision);
+      break;
+  }
+};
+
 
 /**
  * @return {{ actionType: actionType, data: Object }}
@@ -70,12 +98,12 @@ NavActions.prototype.getDataFromURL_ = function() {
 
   var dataObj = {};
 
-  switch(+actionType) {
+  switch(actionType) {
     case NavActionType.REVISION:
       dataObj.revision = fetchedParams[3];
     case NavActionType.REPOSITORY:
       dataObj.repository = fetchedParams[2]
-      dataObj.userName = fetchedParams[1]
+      dataObj.username = fetchedParams[1]
     case NavActionType.INDEX:
     default:
       dataObj.actionType = actionType;

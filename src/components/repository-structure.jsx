@@ -1,6 +1,8 @@
 /** @jsx React.DOM */
 
 require('./repository-structure.scss');
+var NavActions = require('../actions/nav-actions');
+var navActions = NavActions.getInstance();
 var React = require('react/addons');
 var RepositoryActions = require('../actions/repository-actions');
 var repositoryActions = RepositoryActions.getInstance();
@@ -136,7 +138,7 @@ var RepositoryStructure = React.createClass({
     evt.preventDefault();
 
     if (revisionHash !== this.state.activeRevision) {
-      repositoryActions.loadRevision(
+      navActions.navigate(NavActions.NavActionType.REVISION,
           repositoryStore.getUserName(),
           repositoryStore.getRepositoryName(),
           revisionHash);

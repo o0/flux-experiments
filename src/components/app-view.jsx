@@ -20,11 +20,9 @@ var AppView = React.createClass({
   },
 
   componentDidMount: function() {
-    applicationStore.on(ApplicationStore.EventType.LOAD_REPOSITORY, function() {
-      this.setState({
-        repositoryFormIsHidden: applicationStore.hasState(ApplicationStore.State.REPOSITORY_IS_LOADED)
-      });
-    }.bind(this));
+    applicationStore.
+        on(ApplicationStore.EventType.LOAD_REPOSITORY, this.onApplicationStoreChange_).
+        on(ApplicationStore.EventType.SET_STATE, this.onApplicationStoreChange_);
   },
 
   componentWillUnmount: function() {
@@ -36,6 +34,12 @@ var AppView = React.createClass({
       <RepositoryForm hidden={this.state.repositoryFormIsHidden} />
       <RepositoryStructure />
     </div>);
+  },
+
+  onApplicationStoreChange_: function() {
+    this.setState({
+      repositoryFormIsHidden: applicationStore.hasState(ApplicationStore.State.REPOSITORY_IS_LOADED)
+    });
   }
 });
 
