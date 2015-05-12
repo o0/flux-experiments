@@ -9,7 +9,9 @@
   "devDependencies": {
     "css-loader": "",
     "jsx-loader": "",
-    "sass-loader": "",
+    "karma": "",
+    "karma-webpack": "",
+    "sass-loader": "0.4.2",
     "style-loader": "",
     "webpack": "",
     "webpack-dev-server": ""
