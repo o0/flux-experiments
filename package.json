@@ -8,9 +8,14 @@
   },
   "devDependencies": {
     "css-loader": "",
+    "jasmine-core": "^2.3.3",
     "jsx-loader": "",
     "karma": "",
+    "karma-chrome-launcher": "^0.1.10",
+    "karma-jasmine": "^0.3.5",
+    "karma-requirejs": "^0.2.2",
     "karma-webpack": "",
+    "requirejs": "^2.1.17",
     "sass-loader": "0.4.2",
     "style-loader": "",
     "webpack": "",
@@ -18,6 +23,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "start": "webpack-dev-server --watch --content-base"
+    "start": "webpack-dev-server --watch --content-base",
+    "test": "./node_modules/karma/bin/karma start"
   }
 }

@@ -44,11 +44,16 @@ utils.makeSingleton = function(ctor) {
 
 
 /**
- * @param {*...} var_args 
+ * @param {*...} var_args
+ * @throws {Error}
  */
 utils.makeObject = function(var_args) {
   var args = [].slice.call(arguments, 0);
   var obj = {};
+
+  if (args.length % 2 !== 0) {
+    throw Error('Uneven number of arguments given');
+  }
 
   args.forEach(function(arg, index) {
     if (index % 2 == 0) {
