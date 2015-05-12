@@ -77,8 +77,12 @@ var RepositoryStore = function() {
         // equal the last page size. In this case user might make one additional 
         // request.
         this.nextPageIsAvailable_ = payload.revisions.length === repositoryActions.getPageSize()
-        this.revision_ = null;
-        this.revisionHash_ = null;
+
+        if (this.revision_) {
+          this.revision_ = null;
+          this.revisionHash_ = null;
+        }
+
         this.setRevisionsList(payload.revisions, replace, payload.silent);
         break;
 
